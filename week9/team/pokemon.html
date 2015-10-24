@@ -14,27 +14,27 @@
 
     <h1>Pokemon</h1>
 
-    <section id="q1" class="question">
+    <section id="q1" class="question1">
         <h4>How many pokemons?</h4>
         <div class="answer"></div>
     </section>
 
-    <section id="q2" class="question">
+    <section id="q2" class="question2">
         <h4>What is the avearge attack point?</h4>
         <div class="answer"></div>
     </section>
 
-    <section id="q3" class="question">
+    <section id="q3" class="question3">
         <h4>What are all the names?</h4>
         <div class="answer"></div>
     </section>
 
-    <section id="q4" class="question">
+    <section id="q4" class="question4">
         <h4>What is the name of the Pokemon with the highest attack point?</h4>
         <div class="answer"></div>
     </section>
 
-    <section id="q5" class="question">
+    <section id="q5" class="question5">
         <h4>Which Pokemons are of the Grass type?</h4>
         <div class="answer"></div>
     </section>
@@ -58,11 +58,18 @@ function solution3(data){
 }
 
 function solution4(data){
-    return 'TODO'
+  var max =_.max(_.pluck(data, 'Attack'));
+  console.log(max);
+  var data =_.filter(data,function(d){return d.Attack==max})
+    return  _.pluck(data,'Name')
+
 }
 
 function solution5(data){
-    return 'TODO'
+//  var max =_.max(_.pluck(data, 'Type'));
+  //console.log(max);
+  var data =_.filter(data,function(d){return d.Type=="GRASS"})
+    return  _.pluck(data,'Name').join(', ')
 }
 
 function run(id, solutionFunc, data){
