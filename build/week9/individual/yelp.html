@@ -67,7 +67,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
     <script src="/js/geolib.js"></script>
     <script>
 
@@ -78,7 +78,7 @@ function solution1(){
 }
 
 function solution2(){
-    // TODO: use the Internet to lookup the GPS coordinates
+    // What is the distance (km) between Denver and Boulder?  TODO: use the Internet to lookup the GPS coordinates
     var c0 = {latitude: 39.823, longitude: 105.43}   // Denver
     var c1 = {latitude: 38.234, longitude: 102.33}   // Boulder
     return geolib.getDistance(c0,c1)/1000 + ' km'
@@ -86,32 +86,85 @@ function solution2(){
 
 function solution3(){
     var businessesInGilbert = _.filter(items, {city: 'Gilbert'})
-    // TODO: find McDonloads and compute the distance between the first two
-    return 'TODO'
+    // What is the distance (km) between the two McDonald's in the city of Gilbert?TODO: find McDonloads and compute the distance between the first two
+    var McDonald=_.filter(businessesInGilbert,{"name": "McDonald's"});
+    var c0 ={latitude: McDonald[0].latitude, longitude: McDonald[0].longitude}
+    var c1= {latitude: McDonald[1].latitude, longitude: McDonald[1].longitude}
+    return  geolib.getDistance(c0,c1)/1000 + ' km'
+
+
+
 }
 
 function solution4(){
-    return 'TODO'
+  var businessesInPh = _.filter(items, {city: 'Phoenix'})
+  // What is the geographical center of all the McDonald's in the city of Phoenix?
+  var McDonald=_.filter(businessesInPh,{"name": "McDonald's"});
+  console.log( geolib.getCenter(_.map(McDonald,function(d){return {latitude: d.latitude, longitude: d.longitude}})));
+ var center= geolib.getCenter(_.map(McDonald,function(d){return {latitude: d.latitude, longitude: d.longitude}})) ;
+return 'latitude'+center.latitude + '    longitude'+center.longitude
 }
 
 function solution5(){
-    return 'TODO'
+  //In Phoenix, are there more McDonald's or Starbucks?
+  var businessesInPh = _.filter(items, {city: 'Phoenix'});
+    var McDonald=_.size(_.filter(businessesInPh,{"name": "McDonald's"}));
+    var Starbucks=_.size(_.filter(businessesInPh,{"name": "Starbucks"}));
+    if(McDonald>Starbucks)
+    return 'McDonals'
+    else {
+      return 'Starbucks'
+    }
 }
 
 function solution6(){
-    return 'TODO'
-}
 
+    var businessesInPh = _.filter(items, {city: 'Phoenix'});
+    var Starbuck=_.sortBy(_.filter(businessesInPh,{"name": "Starbucks"}),'review_count').reverse();
+    console.log(Starbuck[0]);
+    return 'latitude: ' + Starbuck[0].latitude + ', longitude: ' + Starbuck[0].longitude
+
+}
+var nearest;
 function solution7(){
-    return 'TODO'
+    //In Phoenix, which McDonald's is closest to this most-reviewed Starbucks?
+
+    var businessesInPh = _.filter(items, {city: 'Phoenix'});
+      var McDonald=_.filter(businessesInPh,{"name": "McDonald's"});
+      var Starbuck=_.sortBy(_.filter(businessesInPh,{"name": "Starbucks"}),'review_count').reverse();
+
+      var mpstarbucks = {'latitude': Starbuck[0].latitude,'longitude': Starbuck[0].longitude}
+
+    var allMcD= _.map(McDonald,function(d){return {latitude: d.latitude, longitude: d.longitude}})
+  nearest=geolib.findNearest(mpstarbucks,allMcD, 1);
+  return 'latitude: ' + nearest.latitude + ', longitude: ' + nearest.longitude
+
 }
 
 function solution8(){
-    return 'TODO'
+    //In Phoenix, how many coffee shops are within 2km of this most-reviewed Starbucks?
+    var businessesInPh = _.filter(items, {city: 'Phoenix'});
+      var coffee=_.filter(businessesInPh,function(d){return d.categories.indexOf('Coffee & Tea') > -1});
+      console.log(nearest);
+      return _.size(_.filter(coffee,function(d){
+
+        return geolib.isPointInCircle({latitude: d.latitude, longitude: d.longitude},{latitude: nearest.latitude, longitude: nearest.longitude},2000);
+
+
+      }))
+
 }
 
 function solution9(){
-    return 'TODO'
+    //In Phoenix, which McDonald's is the furthest north, and which is the furthest south?
+    var businessesInPh = _.filter(items, {city: 'Phoenix'});
+      var McDonald=_.filter(businessesInPh,{"name": "McDonald's"});
+    var southest=  _.filter(McDonald,function(d){return d.latitude==_.min(_.pluck(McDonald,'latitude'))})[0];
+      var northest=_.filter(McDonald,function(d){return d.latitude==_.max(_.pluck(McDonald,'latitude'))})[0];
+
+
+
+    return "The furtherst  southest Mcdonald in Phoenix is "+ southest.latitude +    southest.longitude + "<br>The furtherst  northest Mcdonald in Phoenix is "+ northest.latitude  +   northest.longitude
 }
 
 function solution10(){
