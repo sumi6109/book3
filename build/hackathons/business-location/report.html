@@ -12,7 +12,7 @@
 
 <div class="container">
 
-    <h1>Where should we build X?</h1>
+    <h1>Where should we build Le Desert d'Or Academie?</h1>
 
     <section id="candidates" class="question">
         <h4>Where are the six candidate locations?</h4>
@@ -51,45 +51,63 @@ function getCandidateLocations(){
 //
 // Scoring Functions
 //
-
-function has_at_least_one_mcdonald_within_one_mile(loc){
-
-  // get businesses within 1 mile radius
-  var nearbyBusinesses = _.filter(items, function(item){
-    var loc2  = _.pick(item, ['latitude', 'longitude'])
-    var d = geolib.getDistance(loc, loc2)
-    return geolib.convertUnit('mi', d) < 1
+function has_no_liquor_stores_within_3km(loc){
+  // category = Beer, Wine & Spirits
+    var nearbyBusinesses = _.filter(items, function(item){
+      var loc2  = _.pick(item, ['latitude', 'longitude'])
+      var d = geolib.getDistance(loc, loc2)
+    return d <= 3000
   })
 
-  var hasAtLeastOneMcDonald = _.some(nearbyBusinesses, function (business){
-    return business.name.match(/McDonald/)
-  })
+    var liquorStores = _.filter(nearbyBusinesses, function(business){
+      return business.categories.indexOf('Beer, Wine & Spirits') > -1
+    })
 
-  return hasAtLeastOneMcDonald
+  return liquorStores.length == 0
 }
 
-function has_at_least_ten_businesses_with_100_or_more_reviews_within_one_mile(loc){
-  // get businesses within 1 mile radius
-  var nearbyBusinesses = _.filter(items, function(item){
-    var loc2  = _.pick(item, ['latitude', 'longitude'])
-    var d = geolib.getDistance(loc, loc2)
-    return geolib.convertUnit('mi', d) < 1
+function has_hospital_within_2km(loc){
+    var nearbyBusinesses = _.filter(items, function(item){
+      var loc2  = _.pick(item, ['latitude', 'longitude'])
+      var d = geolib.getDistance(loc, loc2)
+    return d <= 2000
   })
 
-  var frequentlyReviewedBusinsses = _.filter(nearbyBusinesses, function (business){
-    return business.review_count >= 100
+  var hospitals = _.filter(nearbyBusinesses, function(business){
+    return business.categories.indexOf('Hospitals') > -1
   })
 
-  return frequentlyReviewedBusinsses.length > 10
+  return hospitals.length > 0
 }
-//Is there a police department within 3km of the location?
-function has_police_dept(loc){
+
+function noise_level(loc){ //satchel spencer
+  var near = _.filter(items, function(item){
+    var d = geolib.getDistance(loc, _.pick(item, ['latitude', 'longitude']))
+    return d < 1000;
+  })
+  var quiet = _.filter(near, function(item){
+    return _.contains(['quiet', 'average'], item.attributes['Noise Level'])
+  }).length;
+  var loud = _.filter(near, function(item){
+    return _.contains(['loud', 'very_loud'], item.attributes['Noise Level'])
+  }).length;
+  return quiet-loud > 10;
+}
 
 
+function competition(loc){
+  var near = _.filter(items, function(item){
+    var d = geolib.getDistance(loc, _.pick(item, ['latitude', 'longitude']))
+    return d < 6000 && _.contains(item.categories, 'Child Care & Day Care');
+  });
+  return !near.length;
+}
+
+function has_police_dept_1km(loc){
   var nearbyBusinesses = _.filter(items, function(item){
     var loc2  = _.pick(item, ['latitude', 'longitude'])
     var d = geolib.getDistance(loc, loc2)
-    return geolib.convertUnit('km', d) < 3
+    return geolib.convertUnit('km', d) < 1
   })
 
   var hasAtLeastOnePoliceDepartment = _.some(nearbyBusinesses, function (business){
@@ -97,10 +115,10 @@ function has_police_dept(loc){
   })
 
   return hasAtLeastOnePoliceDepartment
-  //return true
 }
 
-function has_ice_cream_2(loc){
+
+function has_ice_cream_2km(loc){
   // Is there an ice cream/frozen yogurt place within 2km of the location? contributed by Satchel Spencer
 
     var nearbyBusinesses = _.filter(items, function(item){
@@ -116,16 +134,71 @@ function has_ice_cream_2(loc){
     return hasIcecream
 }
 
-function has_some_feature_3(loc){
-  // TODO
-  return true
+function hasPark(loc){
+
+  // get businesses within 5 mile radius
+  var nearbyBusinesses = _.filter(items, function(item){
+    var loc2  = _.pick(item, ['latitude', 'longitude'])
+    var d = geolib.getDistance(loc, loc2)
+    return geolib.convertUnit('mi', d) < 1
+  })
+
+  var hasPark = _.some(nearbyBusinesses, function (business){
+      return business.categories.indexOf('Parks') > -1
+  })
+
+  return hasPark
 }
 
-function has_some_feature_4(loc){
-  // TODO
-  return false
+function hasGroceryStore(loc){
+
+  // get businesses within 5 mile radius
+  var nearbyBusinesses = _.filter(items, function(item){
+    var loc2  = _.pick(item, ['latitude', 'longitude'])
+    var d = geolib.getDistance(loc, loc2)
+    return geolib.convertUnit('mi', d) < .5
+  })
+
+  var hasGrocery = _.some(nearbyBusinesses, function (business){
+      return _.contains(business.categories, 'Grocery')
+  })
+
+  return hasGrocery
 }
-// TODO: Add more scoring functions
+
+function Is_there_a_lice_service_provider_within_8km(loc){
+    // get businesses within 5 mile radius
+  var nearbyBusinesses = _.filter(items, function(item){
+    var loc2  = _.pick(item, ['latitude', 'longitude'])
+    var d = geolib.getDistance(loc, loc2)
+    return geolib.convertUnit('km', d) < 8
+  })
+
+  var hasLice = _.some(nearbyBusinesses, function (business){
+      return _.contains(business.categories, 'Lice Services')
+  })
+
+
+  return hasLice
+
+}
+
+function Is_there_street_parking_within_1km(loc){
+    // get businesses within 5 mile radius
+  var nearbyBusinesses = _.filter(items, function(item){
+    var loc2  = _.pick(item, ['latitude', 'longitude'])
+    var d = geolib.getDistance(loc, loc2)
+    return geolib.convertUnit('km', d) < 1
+  })
+
+  var hasParking = _.some(nearbyBusinesses, function (business){
+      return business.attributes.Parking && business.attributes.Parking['street'] 
+  })
+
+  console.log(hasParking)
+
+  return hasParking
+}
 
 //
 // Compute a score for a location using the provided scoring function 'scoreFunc'
@@ -218,19 +291,23 @@ function loadDataThenRunSolutions(){
 
       // take only the last 2000 to speed up computation
       // TODO: comment this out before the final submission
-      items = _.takeRight(items, 2000)
+      //items = _.takeRight(items, 2000)
 
       console.log('number of items loaded:', items.length)
       console.log('first item:', items[0])
 
       console.log('scoring all candidate locations')
 
-      scoreAndVisualize(locs, has_at_least_one_mcdonald_within_one_mile, visualize_true_or_false)
-      scoreAndVisualize(locs, has_at_least_ten_businesses_with_100_or_more_reviews_within_one_mile, visualize_true_or_false)
-      scoreAndVisualize(locs, has_police_dept, visualize_true_or_false)
-      scoreAndVisualize(locs, has_ice_cream_2, visualize_true_or_false)
-      scoreAndVisualize(locs, has_some_feature_3, visualize_true_or_false)
-      scoreAndVisualize(locs, has_some_feature_4, visualize_true_or_false)
+      scoreAndVisualize(locs, has_no_liquor_stores_within_3km, visualize_true_or_false)
+      scoreAndVisualize(locs, has_hospital_within_2km, visualize_true_or_false)
+      scoreAndVisualize(locs, noise_level, visualize_true_or_false)
+      scoreAndVisualize(locs, competition, visualize_true_or_false)
+      scoreAndVisualize(locs, has_police_dept_1km, visualize_true_or_false)
+      scoreAndVisualize(locs, has_ice_cream_2km, visualize_true_or_false)
+      scoreAndVisualize(locs, hasPark, visualize_true_or_false)
+      scoreAndVisualize(locs, hasGroceryStore, visualize_true_or_false)
+      scoreAndVisualize(locs, Is_there_a_lice_service_provider_within_8km, visualize_true_or_false)
+      scoreAndVisualize(locs, Is_there_street_parking_within_1km, visualize_true_or_false)
 
    })
    .fail(function(err){
