@@ -59,12 +59,12 @@
           </section>
 
           <section id="q3" class="question collection-item">
-              <h4>Outf these OriginalTweets,How many Are in the Nepalese or Hindi Language? (contributed by ???)</h4>
+              <h4>Out of these OriginalTweets,Who tweeted first in Nepalese or Hindi Language? (contributed by Sushant Mittal)</h4>
               <div class="answer"></div>
           </section>
 
           <section id="q4" class="question collection-item">
-              <h4>question? (contributed by ???)</h4>
+              <h4>What tweets were retweeted longest after their creation? (contributed by Satchel Ellsworth Spencer)</h4>
               <div class="answer"></div>
           </section>
 
@@ -136,13 +136,30 @@ function solution3(){
   console.log(tweets)
 
 
-    return _.filter(items, function(tweet){
+    tweets= _.filter(tweets, function(tweet){
         return tweet['Tweet Language']=="ne"||"hi"
-    }).length
-}
+    })
 
+tweets=_.sortBy(tweets,function(tweet){return new Date(tweet['* Original Tweet Created At'])})
+console.log('sirtfs:', tweets[0])
+return tweets[0]["User Name"]
+
+}
 function solution4(){
-    return 'TODO'
+    return _.chain(items).filter(function(tweet){
+      return  tweet.Rt == 'Retweet';
+    }).groupBy(function(tweet){
+      return tweet['Image Id Str']
+    }).mapValues(function(retweets, imgId){
+      return _.max(_.map(retweets, function(retweet){
+        return (new Date(retweet['* Tweet Created At']))-(new Date(retweet['* Original Tweet Created At']));
+      }))
+    }).pairs().sortBy('1').takeRight(5).map(function(pair){
+      var original = _.find(items, function(item){
+        return item['Image Id Str'] == pair[0];
+      })
+      return '<b>'+Math.round(pair[1]/(3600*1000))+' hours</b>: '+original['Tweet Text'];
+    }).value().join('<br><br>');
 }
 
 function solution5(){

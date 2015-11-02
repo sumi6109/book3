@@ -84,7 +84,7 @@ console.log(businesses)
 function has_Restraurants_Good_For_Groups_Within_1KM(loc,businesses){
 //  var businesses=nearbyBusinesses(loc,1)
   var restra = _.filter(businesses, function (d) {
-    console.log( d.attributes['Good For Groups']);
+
     var res=_.includes(d.categories, 'Restaurants');
     var gfg=d.attributes['Good For Groups']
     if(res != undefined || gfg != undefined)
@@ -105,8 +105,10 @@ function has_No_liqour_store_Within_1KM(loc,businesses){
 //  var businesses=nearbyBusinesses(loc,1)
   var liquor_stores = _.filter(businesses, function(b) {
       //console.log("name", b.name)
+        console.log( "name",b.name);
       if(b.name != undefined)
-      return _.contains(b.name, 'Liquor')
+
+      return _.contains(b.name, 'Liquor')||_.contains(b.name, 'Bar')
       else
         return false
 
@@ -244,7 +246,7 @@ function loadDataThenRunSolutions(){
       console.log('scoring all candidate locations')
     //  var businesses = getNearbyBusinesses(locs, 1)
     //  console.log(businesses);
-      scoreAndVisualize(locs, has_No_FAST_Foodss_Store_Within_1KM, visualize_true_or_false)
+      scoreAndVisualize(locs,  has_No_FAST_Foodss_Store_Within_1KM, visualize_true_or_false)
       scoreAndVisualize(locs, has_Restraurants_Good_For_Groups_Within_1KM, visualize_true_or_false)
       scoreAndVisualize(locs, has_No_liqour_store_Within_1KM, visualize_true_or_false)
       scoreAndVisualize(locs, has_Restraurants_PriceRange_ge2_Within_1KM, visualize_true_or_false)
