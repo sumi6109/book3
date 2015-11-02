@@ -1,3 +1,4 @@
+
 <html>
 <head>
     <style>
@@ -37,7 +38,7 @@
     <div class="parallax">
       <img src="nepal.jpg">
       <h1 id="title">What are the patterns of image diffusion during the Nepal Earthquake?
-        <div class="authors">by Name1, Name2, Name3, Name4</div>
+        <div class="authors">by Nicole Woytarowicz, Sushant Mittal, Name3, Name4</div>
       </h1>
 
     </div>
@@ -48,22 +49,22 @@
       <div id="questions" class="collection with-header">
           <div class="collection-header">Questions</div>
           <section id="q1" class="question collection-item">
-              <h4>question? (contributed by ???)</h4>
+              <h4>What is the average number of followers for each user? (contributed by Nicole Woytarowicz)</h4>
               <div class="answer"></div>
           </section>
 
           <section id="q2" class="question collection-item">
-              <h4>question? (contributed by ???)</h4>
+              <h4>How many original tweets were created in the morning? (contributed by Nicole Woytarowicz</h4>
               <div class="answer"></div>
           </section>
 
           <section id="q3" class="question collection-item">
-              <h4>question? (contributed by ???)</h4>
+              <h4>Out of these OriginalTweets,Who tweeted first in Nepalese or Hindi Language? (contributed by Sushant Mittal)</h4>
               <div class="answer"></div>
           </section>
 
           <section id="q4" class="question collection-item">
-              <h4>question? (contributed by ???)</h4>
+              <h4>What tweets were retweeted longest after their creation? (contributed by Satchel Ellsworth Spencer)</h4>
               <div class="answer"></div>
           </section>
 
@@ -111,19 +112,54 @@ Discuss some findings
 var items   // global scope (i.e., can be accessed in javascript console)
 
 function solution1(){
-    return 'TODO'
+    var originals = _.groupBy(items, function(tweet){
+      return tweet['User Screen Name']
+    })
+
+
+    var followers = _.map(originals, function(user){
+      return user[0]['User Followers Count']
+    })
+    return Math.floor(_.sum(followers)/followers.length)
 }
 
 function solution2(){
-    return 'TODO'
+    return _.filter(items, function(tweet){
+        return tweet.Rt != 'Retweet' && tweet['* Tweet Created At'].match('AM');
+    }).length
 }
 
 function solution3(){
-    return 'TODO'
-}
+  var tweets=_.filter(items, function(tweet){
+      return tweet.Rt != 'Retweet' && tweet['* Tweet Created At'].match('AM');
+  })
+  console.log(tweets)
 
+
+    tweets= _.filter(tweets, function(tweet){
+        return tweet['Tweet Language']=="ne"||"hi"
+    })
+
+tweets=_.sortBy(tweets,function(tweet){return new Date(tweet['* Original Tweet Created At'])})
+console.log('sirtfs:', tweets[0])
+return tweets[0]["User Name"]
+
+}
 function solution4(){
-    return 'TODO'
+    return _.chain(items).filter(function(tweet){
+      return  tweet.Rt == 'Retweet';
+    }).groupBy(function(tweet){
+      return tweet['Image Id Str']
+    }).mapValues(function(retweets, imgId){
+      return _.max(_.map(retweets, function(retweet){
+        return (new Date(retweet['* Tweet Created At']))-(new Date(retweet['* Original Tweet Created At']));
+      }))
+    }).pairs().sortBy('1').takeRight(5).map(function(pair){
+      var original = _.find(items, function(item){
+        return item['Image Id Str'] == pair[0];
+      })
+      return '<b>'+Math.round(pair[1]/(3600*1000))+' hours</b>: '+original['Tweet Text'];
+    }).value().join('<br><br>');
 }
 
 function solution5(){

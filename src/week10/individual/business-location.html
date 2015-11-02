@@ -12,7 +12,7 @@
 
 <div class="container">
 
-    <h1>Where should we build X?</h1>
+    <h1>Where should we build 24-Hour Fitness??</h1>
 
     <section id="candidates" class="question">
         <h4>Where are the candidate locations?</h4>
@@ -35,56 +35,126 @@
 //
 // Candidate Locations
 //
-
 function getCandidateLocations(){
+  var base =[33.45,-112.03]
+  var m =3
+  var n= 10
   var locations = []
-  locations.push({latitude: 33.45, longitude: -112.03})
-  locations.push({latitude: 33.45, longitude: -112.04})
-  locations.push({latitude: 33.45, longitude: -112.05})
-  locations.push({latitude: 33.45, longitude: -112.06})
-  locations.push({latitude: 33.45, longitude: -112.07})
-  locations.push({latitude: 33.45, longitude: -112.08})
+  _.range(base[0], base[0] + .01 * (m-1), .01).forEach(function(lat) {
+    _.range(base[1], base[1] + .01 * (n-1), .01).forEach(function(lng) {
+      locations.push({latitude: _.round(lat, 2), longitude: _.round(lng, 2)})
+    })
+  })
   return locations
 }
 
 
+function nearbyBusinesses(location, distance){
+ return _.filter(items, function(item){
+    var loc2  = _.pick(item, ['latitude', 'longitude'])
+    var d = geolib.getDistance(location, loc2)
+    return geolib.convertUnit('km', d) <  distance
+  })
+}
+
+
+
+
+
+
 //
 // Scoring Functions
-//
+//Has No Fast Food store with in 1 KM
 
-function has_some_feature_1(loc){
-  // TODO
-  return true
+function has_No_FAST_Foodss_Store_Within_1KM(loc,businesses){
+//  var businesses=nearbyBusinesses(loc,1)
+console.log(businesses)
+
+  var sportingGoods = _.filter(businesses, function (d) {
+
+  console.log("sport:", d.categories)
+    return _.contains(d.categories, 'Fast Food')
+  })
+
+  return sportingGoods.length ==0
 }
 
-function has_some_feature_2(loc){
-  // TODO
-  return false
+//Has Restaurants which are good for groups with in 1 KM
+
+function has_Restraurants_Good_For_Groups_Within_1KM(loc,businesses){
+//  var businesses=nearbyBusinesses(loc,1)
+  var restra = _.filter(businesses, function (d) {
+
+    var res=_.includes(d.categories, 'Restaurants');
+    var gfg=d.attributes['Good For Groups']
+    if(res != undefined || gfg != undefined)
+    return gfg && res
+    else {
+      return false
+    }
+
+  })
+  return restra.length > 0
 }
 
-function has_some_feature_3(loc){
-  // TODO
-  return true
+//Has A Liqour Store Close within 2 KM
+
+
+
+function has_No_liqour_store_Within_1KM(loc,businesses){
+//  var businesses=nearbyBusinesses(loc,1)
+  var liquor_stores = _.filter(businesses, function(b) {
+      //console.log("name", b.name)
+        console.log( "name",b.name);
+      if(b.name != undefined)
+
+      return _.contains(b.name, 'Liquor')||_.contains(b.name, 'Bar')
+      else
+        return false
+
+    })
+
+
+  return liquor_stores.length==0
+  }
+
+//Has Restaurants which have price range of greater than or equalto 2 and with in 1 KM
+
+function has_Restraurants_PriceRange_ge2_Within_1KM(loc,businesses){
+    //var businesses=nearbyBusinesses(loc,1)
+  var restra = _.filter(businesses, function (d) {
+    return _.includes(d.categories, 'Restaurants') && d.attributes['Price Range']>=2
+  })
+  return restra.length > 0
 }
 
-function has_some_feature_4(loc){
-  // TODO
-  return false
+//Has no Pizza store within 1 KM
+function has_No_Pizza_within_1KM(loc,businesses){
+  //  var businesses=nearbyBusinesses(loc,1)
+  var restra = _.filter(businesses, function (d) {
+    return _.includes(d.categories, 'Pizza')
+  })
+  return restra.length== 0
 }
 
-function has_some_feature_5(loc){
-  // TODO
-  return false
-}
 
 //
 // Compute a score for a location using the provided scoring function 'scoreFunc'
 // and visualization function 'vizFunc'
 //
 function scoreAndVisualize(locs, scoreFunc, vizFunc){
+  var near_by_buisneess = _.map(locs, function(loc) {
+      return nearbyBusinesses(loc, 1)
+    })
+
+
+
 
   console.time('scoring ' + scoreFunc.name)
-  var scores = _.map(locs, scoreFunc)
+  var scores = _.map(locs, function(loc, i) {
+      return scoreFunc(loc, near_by_buisneess[i])
+    })
+
   console.timeEnd('scoring ' + scoreFunc.name)
 
   var title = _.startCase(scoreFunc.name)
@@ -174,12 +244,13 @@ function loadDataThenRunSolutions(){
       console.log('first item:', items[0])
 
       console.log('scoring all candidate locations')
-
-      scoreAndVisualize(locs, has_some_feature_1, visualize_true_or_false)
-      scoreAndVisualize(locs, has_some_feature_2, visualize_true_or_false)
-      scoreAndVisualize(locs, has_some_feature_3, visualize_true_or_false)
-      scoreAndVisualize(locs, has_some_feature_4, visualize_true_or_false)
-      scoreAndVisualize(locs, has_some_feature_5, visualize_true_or_false)
+    //  var businesses = getNearbyBusinesses(locs, 1)
+    //  console.log(businesses);
+      scoreAndVisualize(locs,  has_No_FAST_Foodss_Store_Within_1KM, visualize_true_or_false)
+      scoreAndVisualize(locs, has_Restraurants_Good_For_Groups_Within_1KM, visualize_true_or_false)
+      scoreAndVisualize(locs, has_No_liqour_store_Within_1KM, visualize_true_or_false)
+      scoreAndVisualize(locs, has_Restraurants_PriceRange_ge2_Within_1KM, visualize_true_or_false)
+      scoreAndVisualize(locs, has_No_Pizza_within_1KM, visualize_true_or_false)
 
    })
    .fail(function(err){

@@ -1,4 +1,3 @@
-
 <html>
 <head>
     <style>
@@ -16,6 +15,7 @@
 
     <section id="q1" class="question">
         <h4>How many unique original images?</h4>
+        (hint: use 'Image Id Str')
         <div class="answer"></div>
     </section>
 
@@ -73,110 +73,119 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
 
-    <script src="http://bigdatahci2015.github.io/data/js/moment.min.js"></script>
+    <script src="/js/moment.min.js"></script>
     <script>
 
 var items   // global scope (i.e., can be accessed in javascript console)
 
 function solution1(){
-    var images = _.pluck(items, 'Image Id Str')
-    return _.size(_.uniq(images))
+  var ori =_.filter(items, function(d){return _.includes(d.Rt,"Original")});
+  console.log(ori);
+    return _.size(ori)
 }
+
 
 function solution2(){
     var users = _.pluck(items, 'Original User Screen Name')
     return _.size(_.uniq(users))
 }
 
+
 function solution3(){
-    return _.filter(items, function(d){
-        return (d['Image Id Str'] == 592674938273865700 && d['Rt'] == 'Retweet')
-    }).length
+  var ori =_.filter(items, function(d){return d["Image Id Str"]==592674938273865700 && d['Rt'] == 'Retweet' });
+  console.log(ori);
+    return (_.size(ori))
 }
 
 function solution4(){
-    var imageRetweets = _.chain(items).filter(function(d){
-        return d['Rt'] == 'Retweet'
-    }).groupBy('Image Id Str').mapValues(function(n){
-        return n.length
-    }).value()
+    var group = _.pairs(_.groupBy(items,"Image Id Str"));
+    var uniq =_.sortBy(_.map(group,function(d){return {image_Id :d[0],size:_.size(d[1]) }}),'size').reverse();
+    return uniq[0].image_Id
 
-    var maxCount = _.max(_.values(imageRetweets))
 
-    return _.invert(imageRetweets)[maxCount]
+
 }
 
 function solution5(){
-    return _.filter(items, function(tweet){
-        return tweet.Rt != 'Retweet' && tweet['* Tweet Created At'].match(/^4\/26/);
-    }).length
+  var myDate = _.filter(items,function(d){
+ 		return _.includes(d['* Original Tweet Created At'],"4/26/15")
+     })
+     return myDate.length
+
+
 }
 
 function solution6(){
-    var originals = _.chain(items).filter(function(tweet){
-        return tweet.Rt != 'Retweet' && tweet['* Tweet Created At'].match(/^4\/26/);
-    }).pluck('Image Id Str').value();
-    
-    var timesTweeted = _.chain(items).filter(function(tweet){
-        return tweet.Rt == 'Retweet' && _.contains(originals, tweet['Image Id Str']);
-    }).groupBy('Image Id Str').mapValues(function(g){
-        return g.length;
-    }).values().value();
-    
-    return _.max(timesTweeted)
+  items= _.filter(items,function(d){
+ 		return _.includes(d['* Original Tweet Created At'],"4/26/15")
+     })
+     var group = _.pairs(_.groupBy(items,"Image Id Str"));
+     var uniq =_.sortBy(_.map(group,function(d){return {image_Id :d[0],size:_.size(d[1]) }}),'size').reverse();
+     return uniq[0].size
+
 }
 
 function solution7(){
-    var originals = _.chain(items).filter(function(tweet){
-        return tweet.Rt != 'Retweet' && tweet['* Tweet Created At'].match(/^4\/26/);
-    }).pluck('Image Id Str').value();
-    
-    var timesTweeted = _.chain(items).filter(function(tweet){
-        return tweet.Rt == 'Retweet' && _.contains(originals, tweet['Image Id Str']);
-    }).groupBy('Image Id Str').mapValues(function(g){
-        return g.length;
-    }).values().value();
-    
-    return _.sum(timesTweeted)/timesTweeted.length;
+  items= _.filter(items,function(d){
+    return _.includes(d['* Original Tweet Created At'],"4/26/15")
+     })
+     var items1= _.filter(items,function(d){
+       return d["Rt"]=="Retweet"
+        })
+        console.log(items)
+        return items1.length/items.length
 }
 
+
+
 function solution8(){
-    var originals = _.chain(items).filter(function(tweet){
-        return tweet.Rt != 'Retweet' && tweet['* Tweet Created At'].match(/^4\/26/);
-    }).pluck('Image Id Str').value();
-    
-    return _.chain(items).filter(function(tweet){
-        return tweet.Rt == 'Retweet' && _.contains(originals, tweet['Image Id Str']);
-    }).groupBy('Image Id Str').mapValues(function(group){
-        return _.filter(group, function(tweet){
-            var original = moment(new Date(tweet['* Original Tweet Created At']));
-            var rt = moment(new Date(tweet['* Tweet Created At']));
-            return rt.isBefore(original.add(1, 'h'));
-        });
-    }).pick(function(group){
-        return group.length;
-    }).keys().value().length;
+  items= _.filter(items,function(d){
+    return _.includes(d['* Original Tweet Created At'],"4/26/15")
+     })
+  items= _.filter(items,function(d){
+    return d["Rt"]=="Retweet"
+     })
+
+    items = _.filter(items,function(d){
+        var original =new Date(d['* Original Tweet Created At']);
+          var retweet =new Date(d['* Tweet Created At']);
+
+       return moment(original).add('1','hour').isBefore(retweet)
+        })
+    // try to use the moment.js library to work with timestamps
+    // this is how you get the moment object representing the time a tweet was created
+  //  var momentCreatedAt = new Date(items[0]['* Tweet Created At'])
+
+    // hints: you may need to use these methods to get an one hour window
+    // http://momentjs.com/docs/#/durations/add/
+    // http://momentjs.com/docs/#/query/is-before/
+  //  console.log(momentCreatedAt)
+    return _.size(items)
 }
 
 function solution9(){
-    var originals = _.chain(items).filter(function(tweet){
-        return tweet.Rt != 'Retweet' && tweet['* Tweet Created At'].match(/^4\/26/);
-    }).pluck('Image Id Str').value();
-    
-    var winners = _.chain(items).filter(function(tweet){
-        return tweet.Rt == 'Retweet' && _.contains(originals, tweet['Image Id Str']);
-    }).groupBy('Image Id Str').pairs().sortBy(function(pair){
-        return -1*pair[1].length;
-    }).take(10).map(function(group){
-        return group[1][0]['Tweet Text']+'<br>';
-    }).value();
+  items= _.filter(items,function(d){
+    return _.includes(d['* Original Tweet Created At'],"4/26/15")
+     })
+     var group = _.pairs(_.groupBy(items,"Image Id Str"));
+     var uniq =_.sortBy(_.map(group,function(d){return {image_Id :d[0],size:_.size(d[1]) }}),'size').reverse();
+      return  _.slice(_.pluck(uniq,'image_Id'),[start=0],[end=9]).join(', ')
 
-    return winners;
+
 }
 
-function solution10(){
-    return 5
-}
+
+  function solution10(){
+    items= _.filter(items,function(d){
+      return _.includes(d['* Original Tweet Created At'],"4/26/15")
+       })
+       var group = _.pairs(_.groupBy(items,"Media Url"));
+       var uniq =_.sortBy(_.map(group,function(d){return {image_Id :d[0],size:_.size(d[1]) }}),'size').reverse();
+        return ( _.slice(_.pluck(uniq,'image_Id'),[start=0],[end=9]).join(', ') + '</br>'+'among them <b>4</b> images has people in it')
+
+
+
+  }
 
 function run(id, solutionFunc, data){
     console.log('run solution for ' + id)
@@ -217,4 +226,3 @@ loadDataThenRunSolutions()
 
 </body>
 </html>
-
