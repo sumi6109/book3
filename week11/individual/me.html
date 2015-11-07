@@ -1,0 +1,242 @@
+<html>
+<head>
+  <title>Me</title>
+    <style>
+        .answer {
+            min-height: 50px
+        }
+        section{
+          padding: 10px;
+          margin-bottom: 12px
+        }
+        #title {
+          position: absolute;
+          padding: 20px;
+          font-size: 64px;
+          font-weight: bolder;
+          color: white;
+          top: 50px;
+          left: 0px;
+          text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black
+        }
+        #title .authors {
+          padding: 20px;
+          font-size: 32px;
+          font-weight: bolder;
+          color: #BBB;
+          text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black
+        }
+        #tweets {
+          min-height: 300px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
+</head>
+<body>
+
+  <div class="parallax-container"  style="height:300px">
+    <div class="parallax">
+      <img src="cloud.jpg">
+      <h1 id="title">What is my online activity?
+        <div class="authors">by Name</div>
+      </h1>
+    </div>
+  </div>
+
+  <div class="section white container flow-text">
+      <div id="questions" class="col s10 collection">
+      </div>
+  </div>
+
+  <script src="https://cdn.firebase.com/js/client/2.3.1/firebase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
+  <script>
+
+// TODO: replace the FIREBAW_URL with your own
+var PERSONAL_FIREBASE_URL = 'https://sumi6109-bigdata-hci.firebaseio.com/'
+
+// add the personal firebase url to the class's firebase
+
+// load events from the personal firebase
+var personal_firebase = new Firebase(PERSONAL_FIREBASE_URL)
+personal_firebase
+  .child('events')
+  .on('value', function(snapshot){
+    var events = snapshot.val()
+    analyze(events)
+})
+
+function ask(func, events){
+  var answer = func(events)
+
+  // html element to display the answer
+  var answerHtml = '<div class="collection-item answer">' +
+      '<h4>' + _.startCase(func.name) + '? </h4>' +
+      '<div>' + answer + '</div>'
+    '</div>'
+
+  // append to #quetions
+  $('#questions').append(answerHtml)
+}
+
+function analyze(events){
+  console.log(events)
+
+  ask(when_did_i_start_collecting, events)
+  ask(how_many_emails_have_i_received_since, events)
+  ask(When_was_the_last_email_recieved, events)
+  ask(How_many_mail_I_recieved_today, events)
+  ask(HoW_Many_Slack_message_I_recieved, events)
+  ask(How_Many_of_them_mentioned_Assignment_in_the_message, events)
+  ask(What_was_the_last_slack_message_from_mili0392, events)
+  ask(How_Many_Tweets_of_Chotta_Rajan, events)
+  ask(What_are_the_most_reliable_sources_tweets, events)
+  ask(Whose_Tweets_got_most_reweets, events)
+  ask(Mars_News_Title, events)
+  ask(Play_Link_Of_the_Live_Feed, events)
+}
+
+function when_did_i_start_collecting(events){
+  return 'I started collecting from'+ _.values(events.gmail)[0].date
+  //console.log(_.values(events.gmail));
+}
+
+function how_many_emails_have_i_received_since(events){
+  return 'I received ' + _.values(events.gmail).length + ' emails.'
+}
+
+function When_was_the_last_email_recieved(events){
+  return 'Last Date was sent at'+ _.values(events.gmail)[_.values(events.gmail).length-1].date
+}
+
+function How_many_mail_I_recieved_today(events){
+  var today = new Date();
+  var dd = today.getDate();
+  var today1 =_.filter(events.gmail,function(d){
+
+    var email_date= new Date(d.date);
+    if(email_date.getDate()==dd){
+
+      return true
+    }
+    else {
+      return false
+    }
+
+
+  })
+
+  return today1.length
+}
+
+function HoW_Many_Slack_message_I_recieved(events){
+  return 'I received ' + _.values(events.slack).length + ' message.'
+}
+
+function How_Many_of_them_mentioned_Assignment_in_the_message(events){
+  var mes=_.filter(events.slack,function(d){
+      if(d.text!=undefined){
+      if((d.text.toLowerCase().indexOf("assignment"))>-1)
+      return true
+      else {
+        return false
+      }
+
+}
+  })
+
+  return mes.length
+}
+
+function What_was_the_last_slack_message_from_mili0392(events){
+  var mes=_.filter(events.slack,function(d){
+      if(d.user_name=="mili0392")
+
+      return true
+      else {
+        return false
+      }
+
+
+  })
+  return mes[mes.length-1].text
+}
+var mes1
+function How_Many_Tweets_of_Chotta_Rajan(events){
+console.log("twitter",events.twitter)
+ mes1=_.filter(events.twitter,function(d){
+
+    if((d.text.toLowerCase().indexOf("chhota"))>-1)
+    return true
+    else {
+      return false
+    }
+
+
+})
+
+return mes1.length
+
+
+
+}
+
+function What_are_the_most_reliable_sources_tweets(events){
+  var most_reliable =_.sortBy(mes1,'follower').reverse();
+
+  return most_reliable[0].text
+}
+
+function Whose_Tweets_got_most_reweets(events){
+  var most_reliable =_.sortBy(mes1,'retweet').reverse();
+
+  return most_reliable[0].name
+
+     return true
+}
+
+function Mars_News_Title(events){
+
+  var mes=_.filter(events.youtube,function(d){
+      if(d.title!=undefined){
+      if((d.title.toLowerCase().indexOf("mars"))>-1)
+      return true
+      else {
+        return false
+      }
+
+}
+  })
+
+  return mes[mes.length-1].title
+
+}
+
+function Play_Link_Of_the_Live_Feed(events){
+  var mes=_.filter(events.youtube,function(d){
+      if(d.title!=undefined){
+      if((d.title.toLowerCase().indexOf("live"))>-1)
+      return true
+      else {
+        return false
+      }
+
+}
+  })
+
+  return mes[mes.length-1].link
+}
+
+// initialize the parallax effect
+$(document).ready(function(){
+    $('.parallax').parallax()
+})
+
+    </script>
+
+</body>
+</html>
