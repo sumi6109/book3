@@ -120,11 +120,11 @@ var profileItems
 var servicesItems
 
 function loadDataThenRunSolutions() {
-  $.get('https://github.com/sumi6109/book3/tree/gh-pages/data/customer_accounts_profile.csv')
+  $.get('/data/customer_accounts_profile.csv')
     .done(function(data){
       profileItems = csv2jsonProfile(data)
       console.log("profile:",profileItems)
-      $.get('https://github.com/sumi6109/book3/tree/gh-pages/data/customer_accounts_service.csv')
+      $.get('/data/customer_accounts_service.csv')
         .done(function(data){
           servicesItems = csv2jsonServices(data)
           console.log("services:",servicesItems)
