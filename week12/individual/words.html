@@ -39,7 +39,7 @@
     <div class="parallax">
       <img src="http://res.cloudinary.com/craftml/image/upload/c_scale,e_brightness:-62,w_1000/v1447038536/books_nh4k05.jpg">
       <h1 id="title">How did word usage change over time?
-        <div class="authors">by Name</div>
+        <div class="authors">by Sushant Mittal</div>
       </h1>
     </div>
   </div>
@@ -249,48 +249,7 @@ function func9(){
 }
 
 function func10(){
-  // Get the ranks for 'war'
-  warRanks = _.chain(items)
-    .filter({'word': 'war'})
-    .pluck('rank')
-    .value()
 
-  // Construct the bitmap for 'war'
-  _.forEach(warRanks, function(rank, i) {
-    if (i==0) warBitMap = 0
-    else {
-      bit = (warRanks[i] - warRanks[i-1]) < 0 ? 1 : 0
-      warBitMap = warBitMap | bit << (i-1)
-    }
-  })
-
-  // Gather words and corresponding ranks, for those words listed in all 11 decades
-  ranks = _.chain(items)
-    .groupBy('word')
-    .mapValues(function(w) { return _.pluck(_.values(w), 'rank') })
-    .pick(function(value) { return value.length == 11 })
-    .value()
-
-  // Map value of each word to its' bitmap
-  bitMaps = _.mapValues(ranks, function(r, i) {
-    _.forEach(r, function(rank, i) {
-      if (i==0) bitMap = 0
-      else {
-        bit = (r[i] - r[i-1]) < 0 ? 1 : 0
-        bitMap = bitMap | bit << (i-1)
-      }
-    })
-  return bitMap
-  })
-
-  // Find words with bitmaps matching "war's" bitmap
-  matches = _.chain(bitMaps)
-    .pick(function(bitMap) { return bitMap == warBitMap })
-    .keys()
-    .without('war')
-    .value().join(', ')
-
-  return matches
 }
 
 // initialize the parallax effect

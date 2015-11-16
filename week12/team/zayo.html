@@ -41,7 +41,7 @@
     <div class="parallax">
       <img src="http://mms.businesswire.com/media/20150722005491/en/239161/5/ZAYO_Group_SPOT.jpg">
       <h1 id="title">Zayo / Big Data: Business Intelligience Collaboration
-        <div class="authors">by Karen Blakemore, Fadhil Suhendi & Zhili Yang</div>
+        <div class="authors">by Sushant Mittal</div>
       </h1>
     </div>
   </div>
@@ -57,17 +57,17 @@
 
       <div id="questions" class="col s10 collection">
         <section id="q1" class="question">
-        <h4 style="font-size: 100%">1. What is the relationship between product and bandwidth, for top 15 bandwidths (10G, DS1, DS3, 50Mb, 30Mb, 1G, 1000Mb, Fiber Pair, 5Mb, Bulk Fiber, 1.5G, 4G, 2.5G, 100Mb, 400Mb)</h4>
+        <h4 style="font-size: 100%">1.How Many Products in each Sector </h4>
         <div style="height:300px", class="answer ct-double-octave"></div>
         </section>
 
         <section id="q2" class="question">
-        <h4>What is the distribution of products across service rankings?</h4>
+        <h4></h4>
         <div class="answer ct-double-octave"></div>
         </section>
 
         <section id="q3" class="question">
-        <h4>What are the relationships between industries and products?</h4>
+        <h4></h4>
         <div class="answer ct-double-octave"></div>
         </section>
       </div>
@@ -108,7 +108,7 @@ function csv2jsonProfile(rawdata){
 function csv2jsonServices(rawdata){
   var lines = rawdata.trim().split('\n')
   var rows = _.rest(lines)
-  rows=_.drop(rows, 7)
+ rows=_.drop(rows, 7)
   return _.map(rows, function(row){
     var toks = row.split('\t')
     return {"ID/Name": toks[0], "Service Count": toks[1], "Service ID": toks[2], "Product": toks[3], "Total MRR": toks[4], "Term": toks[5], "Bandwidth": toks[6], "State A": toks[7], "State Z": toks[8]}
@@ -120,12 +120,14 @@ var profileItems
 var servicesItems
 
 function loadDataThenRunSolutions() {
-  $.get('http://sumi6109.github.io/book3/data/customer_accounts_profile.csv')
+  $.get('/data/customer_accounts_profile.csv')
     .done(function(data){
       profileItems = csv2jsonProfile(data)
-      $.get('http://sumi6109.github.io/book3/data/customer_accounts_service.csv')
+      console.log("profile:",profileItems)
+      $.get('/data/customer_accounts_service.csv')
         .done(function(data){
           servicesItems = csv2jsonServices(data)
+          console.log("services:",servicesItems)
           analyze()
         })
       .fail(function(err){
@@ -170,104 +172,15 @@ function analyze() {
 }
 
 // What is the relationship between product & bandwidth?
-function func1() {
-  productsByBandwidth = _.chain(servicesItems)
-    .filter(function(s) { return !_.includes(['NA', 'N/A', 'NULL'], s.Bandwidth) })
-    .groupBy('Bandwidth')
-    .mapValues(function(b) {
-      return _.chain(b)
-      .groupBy('Product')
-      .mapValues('length')
-      .defaults({'Other': 0}, {'Product A': 0}, {'Product B': 0}, {'Product C': 0},
-        {'Product D': 0}, {'Product E': 0}, {'Product F': 0})
-      .pairs()
-      .unzip()
-      .value()[1]
-    }).value()
+function func3() {
 
-  serviceCounts = _.slice(_.values(productsByBandwidth), 0, 15)
-  bandwidths = _.keys(productsByBandwidth)
-
-  data = {
-    labels: ['Other', 'Product A', 'Product B', 'Product C', 'Product D',
-      'Product E', 'Product F'],
-    series: serviceCounts
-  }
-
-  options = {
-    stackBars: true,
-    horizontalBars: true
-  }
-
-  return Chartist.Bar('#q1 .answer', data, options)
-    .on('draw', function(data) {
-      if(data.type === 'bar') {
-        data.element.attr({ style: 'stroke-width: 30px' })
-      }
-    })
 }
 
 function func2() {
-  var productA = _.filter(profileItems, function(m){
-    return m['Product A Rank'] != ""
-  })
 
-  var productB = _.filter(profileItems,function(m){
-    return m['Product B Rank'] != ""
-  })
-
-  var productC = _.filter(profileItems,function(m){
-    return m['Product C Rank'] != ""
-  })
-
-  var productD = _.filter(profileItems,function(m){
-    return m['Product D Rank'] != ""
-  })
-
-  var productE = _.filter(profileItems,function(m){
-    return m['Product E Rank'] != ""
-  })
-
-  var productF = _.filter(profileItems,function(m){
-    return m['Product F - Metro Rank'] != ""
-  })
-
-  // convert string to int
-  var convA = _.map(_.pluck(productA,'Product A Rank'),_.parseInt)
-  var convB = _.map(_.pluck(productB,'Product B Rank'),_.parseInt)
-  var convC = _.map(_.pluck(productC,'Product C Rank'),_.parseInt)
-  var convD = _.map(_.pluck(productD,'Product D Rank'),_.parseInt)
-  var convE = _.map(_.pluck(productE,'Product E Rank'),_.parseInt)
-  var convF = _.map(_.pluck(productF,'Product F - Metro Rank'),_.parseInt)
-
-  var m = convA.concat(convB,convC,convD,convE,convF)
-  var below100 = _.filter(m,function(n){
-    return n < 100
-  }).length
-
-  var below200 = _.filter(m,function(n){
-    return n > 100 && n < 200
-  }).length
-
-  var below500 = _.filter(m,function(n){
-    return n > 200 && n < 500
-  }).length
-
-  var above500 = _.filter(m,function(n){
-    return n > 500 && n < 1000
-  }).length
-
-  var above1000 = _.filter(m,function(n){
-    return n > 1000
-  }).length
-
-  console.log(below500)
-
-  return "Rank in range 0-100: " + below100 + "; " + "Rank in range 100-200: " + below200 + "; " +
-        "Rank in range 300-500: " + below500 + "; " + "Rank in range 500-1000: " + above500 + "; " + "Rank above 1000: " + above1000
 }
 
-function func3() {
+function func1() {
   //console.log("func3: ", profileItems)
   var products=_.groupBy(profileItems, function(g){
     return g.Industry
@@ -275,51 +188,35 @@ function func3() {
 
   console.log("profileItems: ", products)
   var map_products=_.mapValues(products, function(p){
-    var products_count={
-      "product_A_count": 0,
-      "product_B_count": 0,
-      "product_C_count": 0,
-      "product_D_count": 0
-    }
-    _.forEach(p, function(i){
-      if(!_.includes(i["Product A Total BRR"],"$ -") && i["Product A Total BRR"] !== "")
-        products_count["product_A_count"]=products_count["product_A_count"]+1
-      if(!_.includes(i["Product B Total BRR"],"$ -") && i["Product B Total BRR"] !== "")
-        products_count["product_B_count"]=products_count["product_B_count"]+1
-      if(!_.includes(i["Product C Total BRR"],"$ -") && i["Product C Total BRR"] !== "")
-        products_count["product_C_count"]=products_count["product_C_count"]+1
-      if(!_.includes(i["Product D Total BRR"],"$ -") && i["Product D Total BRR"] !== "")
-        products_count["product_D_count"]=products_count["product_D_count"]+1
-    })
-    return products_count
-  })
-  var keys=_.keys(map_products)
-  console.log("keys: ", map_products)
-  var result=""
 
-  var A_count=[]
-  var B_count=[]
-  var C_count=[]
-  var D_count=[]
-
-  _.forEach(keys, function(k){
-    A_count.push(map_products[k]["product_A_count"])
-    B_count.push(map_products[k]["product_B_count"])
-    C_count.push(map_products[k]["product_C_count"])
-    D_count.push(map_products[k]["product_D_count"])
+    return _.size(p)
   })
-  console.log("keys: ", keys)
-  console.log("A: ", B_count)
-  var data={
-    labels: keys,
+map_products=_.pairs(map_products)
+
+  var series_val=[]
+  var label_val=[]
+   _.forEach(map_products,function(d){
+
+        series_val.push(d[1])
+        label_val.push(d[0])
+        console.log("list",series_val)
+          console.log("list",label_val)
+  })
+  var options = {
+    seriesBarDistance: 10
+  };
+
+  var data = {
+    labels:label_val,
     series: [
-      A_count,
-      B_count,
-      C_count,
-      D_count
-    ]
-  }
-  return Chartist.Bar('#q3 .answer', data)
+    [],
+  series_val
+  ]
+
+  };
+
+
+  return Chartist.Bar('#q1 .answer', data,options)
 }
 
 // initialize the parallax effect
