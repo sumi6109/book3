@@ -191,25 +191,23 @@ items1=_.map(items1,function(d){return 'decade  '+d.decade +'   '+'rank  '+ d.ra
 }
 
 function func5(){
-  old_Items =_.filter(items,function(d){return d.decade<=1950})
+  old_Items =_.filter(items,function(d){return d.rank <300})
   old_words=_.uniq(_.pluck(old_Items,'word'))
-  new_Items =_.filter(items,function(d){return  d.decade>1950})
+  new_Items =_.filter(old_Items,function(d){return  d.decade>=1930})
   new_words=_.uniq(_.pluck(new_Items,'word'))
 
-  console.log(old_words)
-  console.log(new_words)
+
    return _.difference(old_words,new_words).join(', ')
 }
 
 function func6(){
-  old_Items =_.filter(items,function(d){return d.decade<=1995})
+  old_Items =_.filter(items,function(d){return d.rank <300})
   old_words=_.uniq(_.pluck(old_Items,'word'))
-  new_Items =_.filter(items,function(d){return  d.decade>1995})
+  new_Items =_.filter(old_Items,function(d){return  d.decade<2000})
   new_words=_.uniq(_.pluck(new_Items,'word'))
 
-  console.log(old_words)
-  console.log(new_words)
-   return _.difference(new_words,old_words).join(', ')
+
+   return _.difference(old_words,new_words).join(', ')
 }
 
 function func7(){
@@ -220,23 +218,79 @@ function func7(){
 
 words = _.chain(items)
   .groupBy('word')
-  .filter(function(w) {
-      return _.min(_.values(w), 'decade').decade == decade
-  }).map(function(w) { return w[0].word })
+  .filter(function(d) {
+      return _.min(_.values(d), 'decade').decade == items1[0].decade
+  }).map(function(d) { return d[0].word })
   .value().join(', ')
    return words
 }
 
 function func8(){
-  return 
+  oil_words =_.filter(items,{'word':'oil'})
+
+  oil_words=_.sortBy(oil_words,'decade')
+  gold_words =_.filter(items,{'word':'gold'})
+
+gold_words=_.sortBy(gold_words,'decade')
+
+   decade = _.find(_.zip(oil_words, gold_words), function(d) {
+     return parseInt(d[0].rank) > parseInt(d[1].rank)
+   })[0].decade
+
+   return decade
 }
 
 function func9(){
-  return '...'
+  top20Words=_.groupBy(items,'word')
+  top20Words=_.sortBy(_.pairs(_.mapValues(top20Words,function(d) { return d[0].rank - d[d.length-1].rank })),function(r){return r[1]})
+
+
+  return _.take(top20Words,20).join(', ')
 }
 
 function func10(){
-  return '...'
+  // Get the ranks for 'war'
+  warRanks = _.chain(items)
+    .filter({'word': 'war'})
+    .pluck('rank')
+    .value()
+
+  // Construct the bitmap for 'war'
+  _.forEach(warRanks, function(rank, i) {
+    if (i==0) warBitMap = 0
+    else {
+      bit = (warRanks[i] - warRanks[i-1]) < 0 ? 1 : 0
+      warBitMap = warBitMap | bit << (i-1)
+    }
+  })
+
+  // Gather words and corresponding ranks, for those words listed in all 11 decades
+  ranks = _.chain(items)
+    .groupBy('word')
+    .mapValues(function(w) { return _.pluck(_.values(w), 'rank') })
+    .pick(function(value) { return value.length == 11 })
+    .value()
+
+  // Map value of each word to its' bitmap
+  bitMaps = _.mapValues(ranks, function(r, i) {
+    _.forEach(r, function(rank, i) {
+      if (i==0) bitMap = 0
+      else {
+        bit = (r[i] - r[i-1]) < 0 ? 1 : 0
+        bitMap = bitMap | bit << (i-1)
+      }
+    })
+  return bitMap
+  })
+
+  // Find words with bitmaps matching "war's" bitmap
+  matches = _.chain(bitMaps)
+    .pick(function(bitMap) { return bitMap == warBitMap })
+    .keys()
+    .without('war')
+    .value().join(', ')
+
+  return matches
 }
 
 // initialize the parallax effect

@@ -121,64 +121,114 @@ function analyze(events){
 
   ask(how_many_individuals_analyzed_so_far, events)
   ask(whose_data_is_available, events)
-  ask(question1, events)
-  ask(question2, events)
-  ask(question3, events)
-  ask(question4, events)
-  ask(question5, events)
-  ask(question6, events)
-  ask(question7, events)
-  ask(question8, events)
-  ask(question9, events)
-  ask(question10, events)
+  ask(What_are_the_feeds_which_are_being_used, events)
+  ask(Who_uses_max_feeds, events)
+  ask(Who_uses_min_feeds, events)
+  ask(who_uses_Slack, events)
+  ask(who_uses_gmail, events)
+  ask(which_is_used_most_between_gmail_or_twitter, events)
+  ask(which_is_used_most_between_youtube_or_slack, events)
+  ask(how_many_users_only_used_one_feed, events)
+  ask(how_many_users_used_more_than_5_feeds, events)
+  ask(What_is_Average_Number_of_feeds_by_Each_User, events)
 }
+var length;
 
 function how_many_individuals_analyzed_so_far(events){
-  return _.keys(events).length
+   length = _.keys(events).length
+   return length
 }
 
 function whose_data_is_available(events){
   return _.keys(events).join(' , ')
 }
 
-function question1(events){
-  return '...'
+function What_are_the_feeds_which_are_being_used(events){
+
+  return _.chain(events).values(events).map(function(x){return _.keys(x)}).flatten().uniq().filter(function(d){return!_.contains(d,'K2') }).value().join(',')
+  
 }
 
-function question2(events){
-  return '...'
+function Who_uses_max_feeds(events){
+ 
+
+  return _.chain(events).mapValues(function(x) {
+    return _.size(x)
+  }).pairs().sortBy(function(p) { return p[1] }).reverse().first().value()
 }
 
-function question3(events){
-  return '...'
+function Who_uses_min_feeds(events){
+ return _.chain(events).mapValues(function(x) {
+    return _.size(x)
+  }).pairs().sortBy(function(p) { return p[1] }).first().value()}
+
+function who_uses_Slack(events){
+var slack=_.chain(events).mapValues(function(x){return _.keys(x)}).pairs().filter(function(d){  if(_.contains(d[1],'slack')){return d[0]}}).map(function(l){return l[0]}).value().join(', ')
+
+ 
+  return slack
 }
 
-function question4(events){
-  return '...'
+function who_uses_gmail(events){
+var gmail=_.chain(events).mapValues(function(x){return _.keys(x)}).pairs().filter(function(d){  if(_.contains(d[1],'gmail')){return d[0]}}).map(function(l){return l[0]}).value().join(', ')
+
+ 
+  return gmail
+
 }
 
-function question5(events){
-  return '...'
+function which_is_used_most_between_gmail_or_twitter(events){
+
+var gmail=_.chain(events).mapValues(function(x){return _.keys(x)}).pairs().filter(function(d){  if(_.contains(d[1],'gmail')){return d[0]}}).map(function(l){return l[0]}).value().join(', ')
+
+var twitter=_.chain(events).mapValues(function(x){return _.keys(x)}).pairs().filter(function(d){  if(_.contains(d[1],'twitter')){return d[0]}}).map(function(l){return l[0]}).value().join(', ')
+
+
+if(gmail.length>twitter.length)
+  return 'gmail'
+else
+  return 'twitter'
+
+
+
+}
+function which_is_used_most_between_youtube_or_slack(events){
+
+var youtube=_.chain(events).mapValues(function(x){return _.keys(x)}).pairs().filter(function(d){  if(_.contains(d[1],'youtube')){return d[0]}}).map(function(l){return l[0]}).value().join(', ')
+
+var slack=_.chain(events).mapValues(function(x){return _.keys(x)}).pairs().filter(function(d){  if(_.contains(d[1],'slack')){return d[0]}}).map(function(l){return l[0]}).value().join(', ')
+
+
+if(youtube.length>slack.length)
+  return 'youtube'
+else
+  return 'slack'
+
+
+
+}
+function how_many_users_only_used_one_feed(events){
+  var one =_.chain(events).mapValues(function(x) {
+    return _.size(x)
+  }).pairs().filter(function(d){return d[1]==1}).value()
+
+  return one.length
 }
 
-function question6(events){
-  return '...'
+function how_many_users_used_more_than_5_feeds(events){
+ var five =_.chain(events).mapValues(function(x) {
+    return _.size(x)
+  }).pairs().filter(function(d){return d[1]>=5}).value()
+
+  return five.length
 }
 
-function question7(events){
-  return '...'
-}
 
-function question8(events){
-  return '...'
-}
 
-function question9(events){
-  return '...'
-}
+function What_is_Average_Number_of_feeds_by_Each_User(events){
 
-function question10(events){
-  return '...'
+  var avg=_.chain(events).map(function(x){return _.size(x)}).sum().value()
+  return avg/length
 }
 
 
