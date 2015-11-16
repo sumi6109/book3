@@ -1,0 +1,333 @@
+
+<html>
+<head>
+  <title>Google Book Words</title>
+    <style>
+        .answer {
+            min-height: 50px
+        }
+        section{
+          padding: 10px;
+          margin-bottom: 12px
+        }
+        #title {
+          position: absolute;
+          padding: 20px;
+          font-size: 64px;
+          font-weight: bolder;
+          color: white;
+          top: 50px;
+          left: 0px;
+          text-shadow: -2px 0 black, 0 2px black, 5px 0 black, 0 -2px black
+        }
+        #title .authors {
+          padding: 20px;
+          font-size: 32px;
+          font-weight: bolder;
+          color: #DDD;
+          text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black
+        }
+        #tweets {
+          min-height: 300px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.9.4/chartist.min.css">
+</head>
+<body>
+
+  <div class="parallax-container"  style="height:325px">
+    <div class="parallax">
+      <img src="http://mms.businesswire.com/media/20150722005491/en/239161/5/ZAYO_Group_SPOT.jpg">
+      <h1 id="title">Zayo / Big Data: Business Intelligience Collaboration
+        <div class="authors">by Karen Blakemore, Fadhil Suhendi & Zhili Yang</div>
+      </h1>
+    </div>
+  </div>
+
+  <div class="section white container flow-text">
+      <div class="switch">
+        Source Code
+        <label>
+          <input type="checkbox">
+          <span class="lever"></span>
+        </label>
+      </div>
+
+      <div id="questions" class="col s10 collection">
+        <section id="q1" class="question">
+        <h4 style="font-size: 100%">1. What is the relationship between product and bandwidth, for top 15 bandwidths (10G, DS1, DS3, 50Mb, 30Mb, 1G, 1000Mb, Fiber Pair, 5Mb, Bulk Fiber, 1.5G, 4G, 2.5G, 100Mb, 400Mb)</h4>
+        <div style="height:300px", class="answer ct-double-octave"></div>
+        </section>
+
+        <section id="q2" class="question">
+        <h4>What is the distribution of products across service rankings?</h4>
+        <div class="answer ct-double-octave"></div>
+        </section>
+
+        <section id="q3" class="question">
+        <h4>What are the relationships between industries and products?</h4>
+        <div class="answer ct-double-octave"></div>
+        </section>
+      </div>
+  </div>
+
+  <script src="https://cdn.firebase.com/js/client/2.3.1/firebase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.9.4/chartist.min.js"></script>
+  <script>
+
+function toggleSourecode(){
+  $('pre').each(function(){
+    if ($(this).height()){
+        $(this).attr('data-height', $(this).height())
+        $(this).height(0)
+    } else {
+      $(this).height($(this).attr('data-height'))
+    }
+  })
+}
+$('.switch input').click(toggleSourecode)
+
+function csv2jsonProfile(rawdata){
+  var lines = rawdata.trim().split('\n')
+  var rows = _.rest(lines)
+  var row2 = _.drop(rows,4)
+  return _.map(row2, function(row){
+    var toks = row.split('\t')
+    return {"ID/Name": toks[0], "Industry": toks[1], "Vertical": toks[2], "Total (BRR)": toks[3],"Product A Rank":toks[4],"Product A Total BRR":toks[5],"Product B Rank":toks[6],"Product B Total BRR":toks[7],"Product C Rank":toks[8],"Product C Total BRR":toks[9],"Product D Rank":toks[10],"Product D Total BRR":toks[11],"Product E Rank":toks[12],"Product F - Metro Rank":toks[13]}
+  })
+}
+
+function csv2jsonServices(rawdata){
+  var lines = rawdata.trim().split('\n')
+  var rows = _.rest(lines)
+  rows=_.drop(rows, 7)
+  return _.map(rows, function(row){
+    var toks = row.split('\t')
+    return {"ID/Name": toks[0], "Service Count": toks[1], "Service ID": toks[2], "Product": toks[3], "Total MRR": toks[4], "Term": toks[5], "Bandwidth": toks[6], "State A": toks[7], "State Z": toks[8]}
+  })
+
+}
+
+var profileItems
+var servicesItems
+
+function loadDataThenRunSolutions() {
+  $.get('http://sumi6109.github.io/book3/data/customer_accounts_profile.csv')
+    .done(function(data){
+      profileItems = csv2jsonProfile(data)
+      $.get('http://sumi6109.github.io/book3/data/customer_accounts_service.csv')
+        .done(function(data){
+          servicesItems = csv2jsonServices(data)
+          analyze()
+        })
+      .fail(function(err){
+        console.error(err)
+      })
+  }).fail(function(err){
+    console.error(err)
+  })
+}
+
+loadDataThenRunSolutions()
+
+function ask(text, func){
+  var answer = func()
+
+  // html element to display the answer
+  var answerHtml = '<div class="collection-item answer">' +
+      '<h4>' + text + '</h4>' +
+      '<div>' + answer + '</div>' +
+      '<pre><code>' + func.toString() + '</code></pre>' +
+    '</div>'
+
+  // append to #quetions
+  $('#questions').append(answerHtml)
+}
+
+function run(id, solutionFunc){
+    console.log('run solution for ' + id)
+    var answer = solutionFunc()
+    $(id).find('.answer').html(answer)
+    $(id).append('<pre><code>' + solutionFunc.toString() + '</code></pre>')
+}
+
+function analyze() {
+  run('#q1', func1)
+  run('#q2', func2)
+  run('#q3', func3)
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  })
+  toggleSourecode()
+}
+
+// What is the relationship between product & bandwidth?
+function func1() {
+  productsByBandwidth = _.chain(servicesItems)
+    .filter(function(s) { return !_.includes(['NA', 'N/A', 'NULL'], s.Bandwidth) })
+    .groupBy('Bandwidth')
+    .mapValues(function(b) {
+      return _.chain(b)
+      .groupBy('Product')
+      .mapValues('length')
+      .defaults({'Other': 0}, {'Product A': 0}, {'Product B': 0}, {'Product C': 0},
+        {'Product D': 0}, {'Product E': 0}, {'Product F': 0})
+      .pairs()
+      .unzip()
+      .value()[1]
+    }).value()
+
+  serviceCounts = _.slice(_.values(productsByBandwidth), 0, 15)
+  bandwidths = _.keys(productsByBandwidth)
+
+  data = {
+    labels: ['Other', 'Product A', 'Product B', 'Product C', 'Product D',
+      'Product E', 'Product F'],
+    series: serviceCounts
+  }
+
+  options = {
+    stackBars: true,
+    horizontalBars: true
+  }
+
+  return Chartist.Bar('#q1 .answer', data, options)
+    .on('draw', function(data) {
+      if(data.type === 'bar') {
+        data.element.attr({ style: 'stroke-width: 30px' })
+      }
+    })
+}
+
+function func2() {
+  var productA = _.filter(profileItems, function(m){
+    return m['Product A Rank'] != ""
+  })
+
+  var productB = _.filter(profileItems,function(m){
+    return m['Product B Rank'] != ""
+  })
+
+  var productC = _.filter(profileItems,function(m){
+    return m['Product C Rank'] != ""
+  })
+
+  var productD = _.filter(profileItems,function(m){
+    return m['Product D Rank'] != ""
+  })
+
+  var productE = _.filter(profileItems,function(m){
+    return m['Product E Rank'] != ""
+  })
+
+  var productF = _.filter(profileItems,function(m){
+    return m['Product F - Metro Rank'] != ""
+  })
+
+  // convert string to int
+  var convA = _.map(_.pluck(productA,'Product A Rank'),_.parseInt)
+  var convB = _.map(_.pluck(productB,'Product B Rank'),_.parseInt)
+  var convC = _.map(_.pluck(productC,'Product C Rank'),_.parseInt)
+  var convD = _.map(_.pluck(productD,'Product D Rank'),_.parseInt)
+  var convE = _.map(_.pluck(productE,'Product E Rank'),_.parseInt)
+  var convF = _.map(_.pluck(productF,'Product F - Metro Rank'),_.parseInt)
+
+  var m = convA.concat(convB,convC,convD,convE,convF)
+  var below100 = _.filter(m,function(n){
+    return n < 100
+  }).length
+
+  var below200 = _.filter(m,function(n){
+    return n > 100 && n < 200
+  }).length
+
+  var below500 = _.filter(m,function(n){
+    return n > 200 && n < 500
+  }).length
+
+  var above500 = _.filter(m,function(n){
+    return n > 500 && n < 1000
+  }).length
+
+  var above1000 = _.filter(m,function(n){
+    return n > 1000
+  }).length
+
+  console.log(below500)
+
+  return "Rank in range 0-100: " + below100 + "; " + "Rank in range 100-200: " + below200 + "; " +
+        "Rank in range 300-500: " + below500 + "; " + "Rank in range 500-1000: " + above500 + "; " + "Rank above 1000: " + above1000
+}
+
+function func3() {
+  //console.log("func3: ", profileItems)
+  var products=_.groupBy(profileItems, function(g){
+    return g.Industry
+  })
+
+  console.log("profileItems: ", products)
+  var map_products=_.mapValues(products, function(p){
+    var products_count={
+      "product_A_count": 0,
+      "product_B_count": 0,
+      "product_C_count": 0,
+      "product_D_count": 0
+    }
+    _.forEach(p, function(i){
+      if(!_.includes(i["Product A Total BRR"],"$ -") && i["Product A Total BRR"] !== "")
+        products_count["product_A_count"]=products_count["product_A_count"]+1
+      if(!_.includes(i["Product B Total BRR"],"$ -") && i["Product B Total BRR"] !== "")
+        products_count["product_B_count"]=products_count["product_B_count"]+1
+      if(!_.includes(i["Product C Total BRR"],"$ -") && i["Product C Total BRR"] !== "")
+        products_count["product_C_count"]=products_count["product_C_count"]+1
+      if(!_.includes(i["Product D Total BRR"],"$ -") && i["Product D Total BRR"] !== "")
+        products_count["product_D_count"]=products_count["product_D_count"]+1
+    })
+    return products_count
+  })
+  var keys=_.keys(map_products)
+  console.log("keys: ", map_products)
+  var result=""
+
+  var A_count=[]
+  var B_count=[]
+  var C_count=[]
+  var D_count=[]
+
+  _.forEach(keys, function(k){
+    A_count.push(map_products[k]["product_A_count"])
+    B_count.push(map_products[k]["product_B_count"])
+    C_count.push(map_products[k]["product_C_count"])
+    D_count.push(map_products[k]["product_D_count"])
+  })
+  console.log("keys: ", keys)
+  console.log("A: ", B_count)
+  var data={
+    labels: keys,
+    series: [
+      A_count,
+      B_count,
+      C_count,
+      D_count
+    ]
+  }
+  return Chartist.Bar('#q3 .answer', data)
+}
+
+// initialize the parallax effect
+$(document).ready(function(){
+    $('.parallax').parallax()
+})
+
+    </script>
+
+</body>
+</html>
