@@ -249,10 +249,49 @@ function func9(){
 }
 
 function func10(){
+  // Get the ranks for 'war'
+  wars = _.chain(items)
+    .filter({'word': 'war'})
+    .pluck('rank')
+    .value()
 
+  // Construct the bitmap for 'war'
+  _.forEach(wars, function(rank, i) {
+    if (i==0) Bitmap_war = 0
+    else {
+      bit = (wars[i] - wars[i-1]) < 0 ? 1 : 0
+      Bitmap_war = Bitmap_war | bit << (i-1)
+    }
+  })
+
+  // Gather words and corresponding ranks, for those words listed in all 11 decades
+  ranks = _.chain(items)
+    .groupBy('word')
+    .mapValues(function(d) { return _.pluck(_.values(d), 'rank') })
+    .pick(function(value) { return value.length == 11 })
+    .value()
+
+
+  bitMaps = _.mapValues(ranks, function(r, i) {
+    _.forEach(r, function(rank, i) {
+      if (i==0) bitMap = 0
+      else {
+        bit = (r[i] - r[i-1]) < 0 ? 1 : 0
+        bitMap = bitMap | bit << (i-1)
+      }
+    })
+  return bitMap
+  })
+
+  // Find words with bitmaps matching "war's" bitmap
+  Result = _.chain(bitMaps)
+    .pick(function(bitMap) { return bitMap == Bitmap_war })
+    .keys()
+    .without('war')
+    .value().join(', ')
+
+  return Result
 }
-
-// initialize the parallax effect
 $(document).ready(function(){
     $('.parallax').parallax()
 })
