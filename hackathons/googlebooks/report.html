@@ -39,7 +39,7 @@
     <div class="parallax">
       <img src="http://res.cloudinary.com/craftml/image/upload/c_scale,e_brightness:-62,w_1000/v1447038536/books_nh4k05.jpg">
       <h1 id="title">How did word usage change over time?
-        <div class="authors">by [Name 1], [Name 2], [Name 3], [Name 4]</div>
+        <div class="authors">by [Sushant Mittal], [Robert Kendl], [Andrew Krodinger]</div>
       </h1>
     </div>
   </div>
@@ -56,7 +56,10 @@
       <div id="questions" class="col s10 collection">
       </div>
   </div>
+  <h4>Google NGram: How is popularity of USSR,Russia and USA varying over decade (By Sushant Mittal)</h2>
+   <img src="USSR_USA.png" alt="nGram graph 1" align="middle" style="width:800px;height:400px">
 
+   <h4>So the popularity of USSR has dipped after its dissolution at 1991</h2>
   <script src="https://cdn.firebase.com/js/client/2.3.1/firebase.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
@@ -120,11 +123,11 @@ function ask(text, func){
 }
 
 function analyze(){
-  ask('When are the different KingHenry the mot popular?', func1)
-  ask('question2?', func2)
-  ask('question3?', func3)
-  ask('question4?', func4)
-  ask('question5?', func5)
+  //ask('When are the different KingHenry the mot popular?', func1)
+  //ask('question2?', func2)
+  //ask('question3?', func3)
+  //ask('question4?', func4)
+  //ask('question5?', func5)
 
   $('pre code').each(function(i, block) {
     hljs.highlightBlock(block);
@@ -133,7 +136,7 @@ function analyze(){
 }
 
 function func1(){
-  return <iframe name="ngram_chart" src="https://books.google.com/ngrams/interactive_chart?content=King+Henry+1%2CKing+Henry+2%2CKing+Henry+3%2CKing+Henry+4%2CKing+Henry+5%2CKing+Henry+6&year_start=1600&year_end=2008&corpus=15&smoothing=3&share=&direct_url=t1%3B%2CKing%20Henry%201%3B%2Cc0%3B.t1%3B%2CKing%20Henry%202%3B%2Cc0%3B.t1%3B%2CKing%20Henry%203%3B%2Cc0%3B.t1%3B%2CKing%20Henry%204%3B%2Cc0%3B.t1%3B%2CKing%20Henry%206%3B%2Cc0" width=900 height=500 marginwidth=0 marginheight=0 hspace=0 vspace=0 frameborder=0 scrolling=no></iframe>
+return '..'
 }
 
 function func2(){
