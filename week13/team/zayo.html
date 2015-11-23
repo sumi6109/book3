@@ -1,0 +1,249 @@
+
+<html>
+<head>
+  <title>Google Book Words</title>
+    <style>
+        .answer {
+            min-height: 50px
+        }
+        section{
+          padding: 10px;
+          margin-bottom: 12px
+        }
+        #title {
+          position: absolute;
+          padding: 20px;
+          font-size: 64px;
+          font-weight: bolder;
+          color: white;
+          top: 50px;
+          left: 0px;
+          text-shadow: -2px 0 black, 0 2px black, 5px 0 black, 0 -2px black
+        }
+        #title .authors {
+          padding: 20px;
+          font-size: 32px;
+          font-weight: bolder;
+          color: #DDD;
+          text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black
+        }
+        #tweets {
+          min-height: 300px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/css/materialize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.9.4/chartist.min.css">
+</head>
+<body>
+
+  <div class="parallax-container"  style="height:325px">
+    <div class="parallax">
+      <img src="http://mms.businesswire.com/media/20150722005491/en/239161/5/ZAYO_Group_SPOT.jpg">
+      <h1 id="title">Zayo / Big Data: Business Intelligience Collaboration 2
+        <div class="authors">by Sushant Mittal, Andrew  & Robert Kendl</div>
+      </h1>
+    </div>
+  </div>
+
+  <div class="section white container flow-text">
+      <div class="switch">
+        Source Code
+        <label>
+          <input type="checkbox">
+          <span class="lever"></span>
+        </label>
+      </div>
+
+      <div id="questions" class="col s10 collection">
+        <section id="q1" class="question">
+        <h4 style="font-size: 100%">1. Of the Tranzact accounts that have services: What industries/verticals spend the most money and on what products/services?</h4>
+        <div style="height:300px", class="answer ct-double-octave"></div>
+        </section>
+
+        <section id="q2" class="question">
+        <h4>If Zayo only had enough team members to focus on two products, which products would you prioritize</h4>
+        <div class="answer ct-double-octave"></div>
+        </section>
+
+        <section id="q3" class="question">
+        <h4>If Zayo only had 5 representatives, which states would you prioritize for in­person meetings?</h4>
+        <div class="answer ct-double-octave"></div>
+        </section>
+
+        <section id="q4" class="question">
+        <h4>If Zayo sent quotes to all Tranzact accounts, how would you prioritize the customer account list? (And list the prioritized accounts from 1 to ####)</h4>
+        <div class="answer ct-double-octave"></div>
+        </section>
+
+        <section id="q5" class="question">
+        <h4>Of the Tranzact accounts without services: How would you prioritize which accounts to go after first and which products would they potentially buy?</h4>
+        <div class="answer ct-double-octave"></div>
+        </section>
+      </div>
+  </div>
+
+  <script src="https://cdn.firebase.com/js/client/2.3.1/firebase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.1/js/materialize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartist/0.9.4/chartist.min.js"></script>
+  <script>
+
+function toggleSourecode(){
+  $('pre').each(function(){
+    if ($(this).height()){
+        $(this).attr('data-height', $(this).height())
+        $(this).height(0)
+    } else {
+      $(this).height($(this).attr('data-height'))
+    }
+  })
+}
+$('.switch input').click(toggleSourecode)
+
+function csv2jsonDetails(rawdata){
+  var lines = rawdata.trim().split('\n')
+  var rows = _.rest(lines)
+  var row2 = _.drop(rows,4)
+  return _.map(row2, function(row){
+    var toks = row.split(',')
+    return {"Name/ID": toks[0], "Vertical": toks[1], "Industry": toks[2], "Currency": toks[3], "Total BRR": toks[4]}
+  })
+}
+
+function csv2jsonServices(rawdata){
+  var lines = rawdata.trim().split('\n')
+  var rows = _.rest(lines)
+  return _.map(rows, function(row){
+    var toks = row.split(',')
+    return {"Name/ID": toks[0], "Service Name": toks[1], "Number of Services": toks[2], "Bandwidth": toks[3], "Product": toks[4], "State A": toks[5], "State Z": toks[6], "Service Status": toks[7], "Term": toks[8], "Total MRR": toks[9]}
+  })
+
+}
+function csv2jsonNoServices(rawdata){
+  var lines = rawdata.trim().split('\n')
+  var rows = _.rest(lines)
+  return _.map(rows, function(row){
+    var toks = row.split(',')
+    return {"Name/ID": toks[0], "Vertical": toks[1], "Industry": toks[2], "EmployeeQuantityGrowthRate": toks[3], "SalesTurnoverGrowthRate": toks[4], "PriorYearEmployees": toks[5], "State Z": toks[6], "PriorYearRevenue": toks[7], "SalesVolume": toks[8], "SmallBusiness": toks[9]}
+  })
+
+}
+
+var detailItems
+var servicesItems
+var noservicesItems
+
+
+
+function loadDataThenRunSolutions() {
+  $.get('/data/customer_accounts_details.csv')
+    .done(function(data){
+      detailItems = csv2jsonDetails(data)
+      console.log('detailItems[0]', detailItems[0])
+      $.get('/data/customer_accounts_service1.csv')
+        .done(function(data){
+          servicesItems = csv2jsonServices(data)
+          $.get('/data/customer_accounts_noservice.csv')
+            .done(function(data){
+                noservicesItems = csv2jsonNoServices(data)
+                console.log('noservicesItems[0]', noservicesItems[0])
+                analyze()
+
+              })
+
+        })
+      .fail(function(err){
+        console.error(err)
+      })
+  }).fail(function(err){
+    console.error(err)
+  })
+}
+
+
+loadDataThenRunSolutions()
+
+function ask(text, func){
+  var answer = func()
+
+  // html element to display the answer
+  var answerHtml = '<div class="collection-item answer">' +
+      '<h4>' + text + '</h4>' +
+      '<div>' + answer + '</div>' +
+      '<pre><code>' + func.toString() + '</code></pre>' +
+    '</div>'
+
+  // append to #quetions
+  $('#questions').append(answerHtml)
+}
+
+function run(id, solutionFunc){
+    console.log('run solution for ' + id)
+    var answer = solutionFunc()
+    $(id).find('.answer').html(answer)
+    $(id).append('<pre><code>' + solutionFunc.toString() + '</code></pre>')
+}
+
+function analyze() {
+  run('#q1', func1)
+  run('#q2', func2)
+  run('#q3', func3)
+  run('#q4', func4)
+  run('#q5', func5)
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  })
+  toggleSourecode()
+}
+
+// Of the Tranzact accounts that have services: What industries/verticals spend the most
+// money and on what products/services?
+function func1() {
+var sorted = _.sortBy(detailItems,'Total BRR').reverse()
+
+
+  return sorted[0]['Name/ID'] + "   "+ sorted[0]['Vertical']
+
+}
+
+// If Zayo only had enough team members to focus on two products, which products would
+// you prioritize?
+function func2() {
+    var grps =_.groupBy(servicesItems,function(d){return d['Product']})
+    var values1= _.mapValues(grps,function(d){return d.length})
+    values1 =_.sortBy(_.pairs(values1),function(d){return d[1]})
+    console.log(values1)
+  return values1[0][0] + values1[1][0]
+}
+
+// If Zayo only had 5 representatives, which states would you prioritize for in­ person meetings?
+function func3() {
+  return 'NIY'
+}
+
+// If Zayo sent quotes to all Tranzact accounts, how would you prioritize the customer
+// account list? (And list the prioritized accounts from 1 to ####).
+function func4() {
+  return 'NIY'
+}
+
+// Of the Tranzact accounts without services: How would you prioritize which accounts to
+// go after first and which products would they potentially buy?
+function func5() {
+  return 'NIY'
+}
+
+// initialize the parallax effect
+$(document).ready(function(){
+    $('.parallax').parallax()
+})
+
+    </script>
+
+</body>
+</html>
